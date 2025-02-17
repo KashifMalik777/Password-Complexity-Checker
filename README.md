@@ -99,7 +99,7 @@ The backend returns a comprehensive score along with specific feedback on how to
 
 Below is a preview of the user interface:
 
-![Password Complexity Checker](demo-screenshot.png)
+![Password Complexity Checker](password.gif)
 
 ---
 
