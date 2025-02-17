@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Password Strength Checker</title>
+  <style>
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      width: 95%;
+      max-width: 480px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      color: #222;
+      font-size: 22px;
+    }
+
+    input[type="text"] {
+        width: calc(480px);
+        padding: 14px;
+        margin-bottom: 12px;
+        border: 2px solid #333;
+        border-radius: 6px;
+        font-size: 16px;
+        background: #222;
+        color: white;
+        text-align: center;
+        display: block;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border: 2px solid #667eea;
+    }
+
+    .generate-btn {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .generate-btn:hover {
+      background: #222;
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 12px;
+      background: #eee;
+      border-radius: 8px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: #ff4d4d;
+      border-radius: 8px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .result {
+      margin-top: 15px;
+      text-align: left;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    .result p {
+      margin: 5px 0;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      color: #ff4d4d;
+      list-style: none;
+      padding-left: 0;
+      font-size: 13px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Password Strength Checker</h1>
+    <button class="generate-btn" onclick="generatePassword()">Generate Secure Password</button>
+    <input type="text" id="password" placeholder="Enter or generate a password" oninput="debouncedUpdateStrength()">
+    
+    <!-- Dynamic progress bar -->
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div class="result" id="result" style="display: none;">
+      <p id="entered-password"></p>
+      <p id="strength"></p>
+      <p id="leak-status"></p>
+      <ul id="feedback"></ul>
+    </div>
+  </div>
+
+  <script>
+    // Simple debounce to prevent too many requests while typing
+    let debounceTimeout;
+    function debouncedUpdateStrength() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(updateStrength, 300);
+    }
+    
+    // Generate a strong password following all strength rules
+    function generatePassword() {
+      const length = 16;
+      const lowercase = "abcdefghijklmnopqrstuvwxyz";
+      const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const numbers = "0123456789";
+      const specialChars = "!@#$%^&*()-_=+";
+
+      let allChars = lowercase + uppercase + numbers + specialChars;
+      let password = "";
+
+      // Ensure at least one character from each required category
+      password += lowercase[Math.floor(Math.random() * lowercase.length)];
+      password += uppercase[Math.floor(Math.random() * uppercase.length)];
+      password += numbers[Math.floor(Math.random() * numbers.length)];
+      password += specialChars[Math.floor(Math.random() * specialChars.length)];
+
+      // Fill the rest of the password randomly
+      for (let i = 4; i < length; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+      }
+
+      // Shuffle password to avoid predictable patterns
+      password = password.split('').sort(() => Math.random() - 0.5).join('');
+
+      document.getElementById("password").value = password;
+      updateStrength();
+    }
+
+    // Call the backend and update the interface
+    async function updateStrength() {
+      const password = document.getElementById('password').value;
+      
+      // If empty, hide result and reset progress bar
+      if (!password) {
+        document.getElementById('result').style.display = "none";
+        document.getElementById('progress-bar').style.width = "0%";
+        return;
+      }
+      
+      const response = await fetch('/assess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password })
+      });
+      
+      const data = await response.json();
+      
+      // Update progress bar.
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = data.percentage + "%";
+      let color;
+      if (data.score <= 2) color = "#ff4d4d";
+      else if (data.score === 3) color = "#ffa500";
+      else if (data.score === 4) color = "#cddc39";
+      else if (data.score === 5) color = "#4caf50";
+      progressBar.style.background = color;
+      
+      // Update results
+      document.getElementById('entered-password').textContent = "Entered Password: " + data.password;
+      document.getElementById('strength').textContent = "Password Strength: " + data.strength;
+      document.getElementById('leak-status').textContent = data.leakMessage;
+      
+      const feedbackUl = document.getElementById('feedback');
+      feedbackUl.innerHTML = "";
+      data.feedback.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        feedbackUl.appendChild(li);
+      });
+      
+      document.getElementById('result').style.display = "block";
+    }
+  </script>
+</body>
+</html>
