@@ -43,7 +43,7 @@ This is a Flask-based web application that assesses password strength and checks
 2. **Navigate to the project directory:**
 
     ```bash
-    cd password-complexity-checker
+    cd PRODIGY_CS_03-main
     ```
 
 3. **Create a virtual environment (optional but recommended):**
