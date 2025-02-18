@@ -37,7 +37,7 @@ This is a Flask-based web application that assesses password strength and checks
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/password-complexity-checker.git
+    git clone https://github.com/KashifMalik777/PRODIGY_CS_03.git
     ```
 
 2. **Navigate to the project directory:**
