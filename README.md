@@ -1,4 +1,3 @@
-# PRODIGY_CS_03
 # Password Complexity Checker 🔒
 
 This is a Flask-based web application that assesses password strength and checks for data breaches, ensuring users create stronger, more secure passwords. The backend (`app.py`) processes user-inputted passwords by evaluating their length, character diversity (uppercase, lowercase, digits, and special characters), and querying the Have I Been Pwned API to check if the password has been leaked, assigning a strength score and providing feedback for improvement. The frontend (`index.html`) features a clean, responsive UI with an input field, a secure password generator, a dynamic progress bar, and real-time strength feedback using JavaScript.
